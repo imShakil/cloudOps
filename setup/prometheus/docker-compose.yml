@@ -1,0 +1,31 @@
+services:
+  prometheus:
+    container_name: prometheus
+    image: prom/prometheus:3.5.0
+    ports:
+      - "9090:9090"
+    volumes:
+      - prometheus-data:/prometheus
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    restart: always
+    networks:
+      - prometheus
+
+  # node-exporter:
+  #   container_name: node-exporter
+  #   image: prom/node-exporter:v1.10.2
+  #   networks:
+  #     - prometheus
+
+  # alert-manager:
+  #   container_name: alert-manager
+  #   image: prom/alertmanager:v0.30.0
+  #   networks:
+  #     - prometheus
+
+
+volumes:
+  prometheus-data:
+
+networks:
+  prometheus:
