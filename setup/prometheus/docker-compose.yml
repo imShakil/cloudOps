@@ -11,18 +11,30 @@ services:
     networks:
       - prometheus
 
-  # node-exporter:
-  #   container_name: node-exporter
-  #   image: prom/node-exporter:v1.10.2
-  #   networks:
-  #     - prometheus
+  node-exporter:
+    container_name: node-exporter
+    image: prom/node-exporter:v1.10.2
+    networks:
+      - prometheus
+    pid: host
+    restart: unless-stopped
+    volumes:
+      - "/:/host:ro, rslave"
+    command:
+    - "--path.rootfs=/host"
 
-  # alert-manager:
-  #   container_name: alert-manager
-  #   image: prom/alertmanager:v0.30.0
-  #   networks:
-  #     - prometheus
-
+  alert-manager:
+    container_name: alert-manager
+    image: prom/alertmanager:v0.30.0
+    networks:
+      - prometheus
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./alertmanager.yml:/alertmanager/config.yml
+    restart: unless-stopped
+    command:
+      - "--config.file=config.yml"
 
 volumes:
   prometheus-data:
