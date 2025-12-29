@@ -37,8 +37,19 @@ services:
     command:
       - "--config.file=config.yml"
 
+  grafana:
+    container_name: grafana
+    image: grafana/grafana:12.3
+    ports:
+      - "9094:3000"
+    networks:
+      - prometheus
+    volumes:
+      - grafana-data:/var/lib/grafana
+
 volumes:
   prometheus-data:
+  grafana-data:
 
 networks:
   prometheus:

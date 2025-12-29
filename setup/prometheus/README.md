@@ -20,9 +20,14 @@ cd prometheus-*
 ./prometheus --help
 ```
 
-## Docker Setup
+## Docker Compose Setup
 
-- To install docker version with `docker run`:
+- To install docker version with `docker copose`:
 
 ```bash
-docker volume create prometheus-data
+cd setup/prometheus
+docker compose up -d
+```
+
+
+
