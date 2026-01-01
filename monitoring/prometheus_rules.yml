@@ -2,7 +2,7 @@ groups:
   - name: alerts
     rules:
     - alert: MemoryUtilizationHigh
-      expr: ((node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes) * 100 > 80
+      expr: ((node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes) * 100 > 20
       for: 5m
       labels:
         severity: warning

@@ -1,0 +1,44 @@
+services:
+  postgres:
+    image: postgres:15.14-bookworm
+    container_name: kcdb
+    restart: always
+    environment:
+      POSTGRES_DB: keycloakdb
+      POSTGRES_USER: keycloakuser
+      POSTGRES_PASSWORD: keycloakpassword
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - keycloak-net
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    container_name: keycloak
+    restart: always
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/keycloakdb
+      KC_DB_USERNAME: keycloakuser
+      KC_DB_PASSWORD: keycloakpassword
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      KC_HOSTNAME: kc.mhosen.com
+      KC_HEALTH_ENABLED: true
+      KC_METRICS_ENABLED: true
+    ports:
+      - "8081:8080"
+    command: 
+      - start
+      - --http-enabled=true
+      - --proxy-headers=xforwarded
+    networks:
+      - keycloak-net
+    depends_on:
+      - postgres
+
+volumes:
+  postgres-data:
+
+networks:
+  keycloak-net:

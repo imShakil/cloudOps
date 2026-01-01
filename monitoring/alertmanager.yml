@@ -1,6 +1,6 @@
 global:
   resolve_timeout: 1m
-  slack_api_url: '${SLACK_WEBHOOK_URL}'
+  slack_api_url: ${SLACK_API_URL}
 
 route:
   # Route new alerts to the demo-webhook receiver, defined below
@@ -10,6 +10,5 @@ receivers:
     slack_configs:
       - channel: '#cloudops'
         send_resolved: true
-      - title: '{{ template "slack.title" . }}'
+        title: '{{ template "slack.title" . }}'
         text: '{{ template "slack.text" . }}'
-
