@@ -1,0 +1,76 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "Keycloak Logs Dashboard",
+    "tags": ["keycloak", "logs"],
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Keycloak Container Logs",
+        "type": "logs",
+        "targets": [
+          {
+            "expr": "{container_name=\"keycloak\"}",
+            "refId": "A"
+          }
+        ],
+        "gridPos": {
+          "h": 12,
+          "w": 24,
+          "x": 0,
+          "y": 0
+        },
+        "options": {
+          "showTime": true,
+          "showLabels": false,
+          "showCommonLabels": false,
+          "wrapLogMessage": false,
+          "prettifyLogMessage": false,
+          "enableLogDetails": true,
+          "dedupStrategy": "none",
+          "sortOrder": "Descending"
+        }
+      },
+      {
+        "id": 2,
+        "title": "Keycloak Error Logs",
+        "type": "logs",
+        "targets": [
+          {
+            "expr": "{container_name=\"keycloak\"} |~ \"(?i)(error|exception|failed|warn)\"",
+            "refId": "A"
+          }
+        ],
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 12
+        }
+      },
+      {
+        "id": 3,
+        "title": "Keycloak Authentication Logs",
+        "type": "logs",
+        "targets": [
+          {
+            "expr": "{container_name=\"keycloak\"} |~ \"(?i)(login|logout|auth|token)\"",
+            "refId": "A"
+          }
+        ],
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 12
+        }
+      }
+    ],
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "refresh": "5s"
+  }
+}
