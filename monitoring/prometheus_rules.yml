@@ -107,21 +107,30 @@ groups:
         summary: "High load average on {{ $labels.instance }}"
         description: "15-minute load average is {{ $value | humanize }}x the number of CPUs"
 
-    # Container/Docker Alerts (if using cAdvisor)
+    # Container/Docker Alerts
     - alert: ContainerDown
-      expr: absent(container_last_seen{name!=""})
+      expr: up{job="cadvisor"} == 0 or absent(up{job="cadvisor"})
       for: 1m
       labels:
         severity: critical
       annotations:
-        summary: "Container {{ $labels.name }} is down"
-        description: "Container {{ $labels.name }} on {{ $labels.instance }} is not running"
+        summary: "cAdvisor is down on {{ $labels.instance }}"
+        description: "Container monitoring is unavailable on {{ $labels.instance }}"
 
-    - alert: ContainerMemoryHigh
-      expr: (container_memory_usage_bytes / container_spec_memory_limit_bytes) * 100 > 90
+    - alert: ContainerCpuHigh
+      expr: rate(container_cpu_usage_seconds_total{name!=""}[5m]) * 100 > 80
       for: 5m
       labels:
         severity: warning
       annotations:
-        summary: "Container memory high for {{ $labels.name }}"
+        summary: "High CPU usage for container {{ $labels.name }}"
+        description: "Container {{ $labels.name }} CPU usage is {{ $value | humanize }}%"
+
+    - alert: ContainerMemoryHigh
+      expr: (container_memory_usage_bytes{name!=""} / container_spec_memory_limit_bytes{name!=""}) * 100 > 90
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "High memory usage for container {{ $labels.name }}"
         description: "Container {{ $labels.name }} memory usage is {{ $value | humanize }}%"
