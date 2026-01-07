@@ -13,9 +13,9 @@ services:
     restart: always
     networks:
       - monitoring
-    # command:
-    #   - "--web.external-url=https://cloudops.mhosen.com/prometheus"
-    #   - "--web.route-prefix=/prometheus"
+    command:
+      - "--web.external-url=https://cloudops.mhosen.com/prometheus"
+      - "--web.route-prefix=/prometheus"
 
   node-exporter:
     container_name: node-exporter
@@ -45,7 +45,7 @@ services:
       - ./alertmanager.yml:/alertmanager/config.yml
     restart: unless-stopped
     command:
-      - "--config.file=config.yml"
+      - "--config.file=/alertmanager/config.yml"
       - "--web.external-url=https://cloudops.mhosen.com/am"
       - "--web.route-prefix=/am"
 
