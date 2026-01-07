@@ -37,6 +37,8 @@ services:
   alert-manager:
     container_name: alert-manager
     image: prom/alertmanager:v0.30.0
+    environment:
+      - SLACK_API_URL=${SLACK_API_URL}
     networks:
       - monitoring
     ports:
