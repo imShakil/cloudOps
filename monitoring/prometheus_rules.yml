@@ -1,11 +1,127 @@
 groups:
   - name: alerts
     rules:
+    # Memory Alerts
     - alert: MemoryUtilizationHigh
-      expr: ((node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes) * 100 > 20
+      expr: ((node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes) * 100 > 80
       for: 5m
       labels:
         severity: warning
       annotations:
-        summary: "High memory usage"
-        description: "Memory usage is above 80%!"
+        summary: "High memory usage on {{ $labels.instance }}"
+        description: "Memory usage is above 80% (current: {{ $value | humanize }}%)"
+
+    - alert: MemoryUtilizationCritical
+      expr: ((node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes) * 100 > 95
+      for: 2m
+      labels:
+        severity: critical
+      annotations:
+        summary: "Critical memory usage on {{ $labels.instance }}"
+        description: "Memory usage is above 95% (current: {{ $value | humanize }}%)"
+
+    # CPU Alerts
+    - alert: CPUUtilizationHigh
+      expr: 100 - (avg by (instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "High CPU usage on {{ $labels.instance }}"
+        description: "CPU usage is above 80% (current: {{ $value | humanize }}%)"
+
+    - alert: CPUUtilizationCritical
+      expr: 100 - (avg by (instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 95
+      for: 2m
+      labels:
+        severity: critical
+      annotations:
+        summary: "Critical CPU usage on {{ $labels.instance }}"
+        description: "CPU usage is above 95% (current: {{ $value | humanize }}%)"
+
+    # Disk Space Alerts
+    - alert: DiskSpaceWarning
+      expr: ((node_filesystem_size_bytes{fstype!~"tmpfs|fuse.lxcfs|squashfs|vfat"} - node_filesystem_avail_bytes{fstype!~"tmpfs|fuse.lxcfs|squashfs|vfat"}) / node_filesystem_size_bytes{fstype!~"tmpfs|fuse.lxcfs|squashfs|vfat"}) * 100 > 80
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Disk space low on {{ $labels.instance }}"
+        description: "Disk {{ $labels.mountpoint }} is {{ $value | humanize }}% full"
+
+    - alert: DiskSpaceCritical
+      expr: ((node_filesystem_size_bytes{fstype!~"tmpfs|fuse.lxcfs|squashfs|vfat"} - node_filesystem_avail_bytes{fstype!~"tmpfs|fuse.lxcfs|squashfs|vfat"}) / node_filesystem_size_bytes{fstype!~"tmpfs|fuse.lxcfs|squashfs|vfat"}) * 100 > 90
+      for: 2m
+      labels:
+        severity: critical
+      annotations:
+        summary: "Critical disk space on {{ $labels.instance }}"
+        description: "Disk {{ $labels.mountpoint }} is {{ $value | humanize }}% full"
+
+    # Disk I/O Alerts
+    - alert: DiskIOHigh
+      expr: rate(node_disk_io_time_seconds_total[5m]) > 0.8
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "High disk I/O on {{ $labels.instance }}"
+        description: "Disk {{ $labels.device }} I/O usage is high ({{ $value | humanize }})"
+
+    # Instance Down Alerts
+    - alert: InstanceDown
+      expr: up == 0
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "Instance {{ $labels.instance }} is down"
+        description: "{{ $labels.job }} instance {{ $labels.instance }} has been down for more than 1 minute"
+
+    # Network Alerts
+    - alert: NetworkReceiveErrors
+      expr: rate(node_network_receive_errs_total[5m]) > 10
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Network receive errors on {{ $labels.instance }}"
+        description: "Interface {{ $labels.device }} is experiencing receive errors ({{ $value | humanize }} errors/sec)"
+
+    - alert: NetworkTransmitErrors
+      expr: rate(node_network_transmit_errs_total[5m]) > 10
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Network transmit errors on {{ $labels.instance }}"
+        description: "Interface {{ $labels.device }} is experiencing transmit errors ({{ $value | humanize }} errors/sec)"
+
+    # Load Average Alerts
+    - alert: LoadAverageHigh
+      expr: node_load15 / count(node_cpu_seconds_total{mode="idle"}) without (cpu, mode) > 2
+      for: 10m
+      labels:
+        severity: warning
+      annotations:
+        summary: "High load average on {{ $labels.instance }}"
+        description: "15-minute load average is {{ $value | humanize }}x the number of CPUs"
+
+    # Container/Docker Alerts (if using cAdvisor)
+    - alert: ContainerDown
+      expr: absent(container_last_seen{name!=""})
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "Container {{ $labels.name }} is down"
+        description: "Container {{ $labels.name }} on {{ $labels.instance }} is not running"
+
+    - alert: ContainerMemoryHigh
+      expr: (container_memory_usage_bytes / container_spec_memory_limit_bytes) * 100 > 90
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Container memory high for {{ $labels.name }}"
+        description: "Container {{ $labels.name }} memory usage is {{ $value | humanize }}%"
